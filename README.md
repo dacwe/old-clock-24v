@@ -19,9 +19,9 @@ Settings (one or all can be set):
     http://<ipaddress>/
         ?ssid=ssidname
         &password=ssidpassword
-	&dials=int              - set clock dials: 0=00:00, 334=05:34, 23:59=719
-    	&dialsaddress=int       - internal used for wear-leveling... should be 0 or max 2
-	&pause=int              - != 0 makes it pause for 5 minutes and then restart
+        &dials=int              - set clock dials: 0=00:00, 334=05:34, 23:59=719
+        &dialsaddress=int       - internal used for wear-leveling... should be 0 or max 2
+        &pause=int              - != 0 makes it pause for 5 minutes and then restart
 
 
 ## Internals
