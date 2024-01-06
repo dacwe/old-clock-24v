@@ -216,7 +216,7 @@ void loop() {
     // one step in ahead folks
     Serial.println("tick tack!");
 
-    tick();
+    tick(dials % 2 == 0);
 
     if (readDials() == dials) {
       // only update the dials if the dials hasn't changed by "someone" else
@@ -242,10 +242,9 @@ int realClock() {
 //==============================================================
 // Motor handling
 
-void tick() {
-  pulse(true);
+void tick(bool positive) {
+  pulse(positive);
   delay(1000);
-  pulse(false);
 }
 
 void pulse(bool fwd) {
