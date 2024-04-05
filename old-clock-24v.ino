@@ -14,33 +14,32 @@
 #define EEPROM_TIME_ADDRESS 200
 #define EEPROM_TIME_START 202
 
-#define ENABLE_A 14
-#define IN_1 12
-#define IN_2 13
+#define ENABLE_A 33
+#define IN_1 35
+#define IN_2 37
 
 AsyncWebServer server(80);
 
 WiFiUDP ntpUDP;
 NTP ntp(ntpUDP);
 
-unsigned long pause = 0;
+unsigned long pauseTime = 0;
 
 void setup() {
   millis();
-	// Set all the motor control pins to outputs
+  // Set all the motor control pins to outputs
   pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(ENABLE_A, OUTPUT);
-	pinMode(IN_1, OUTPUT);
-	pinMode(IN_2, OUTPUT);
-	turnOff();
+  pinMode(ENABLE_A, OUTPUT);
+  pinMode(IN_1, OUTPUT);
+  pinMode(IN_2, OUTPUT);
+  turnOff();
 
-
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   //-------------------------------------------------------
   // Serial init
   Serial.begin(115200);
-  while (!Serial) {}
+  delay(1000);
   
 
   Serial.println("====================");
@@ -65,6 +64,7 @@ void setup() {
 
   Serial.print("Connecting to wifi");
 
+  WiFi.setHostname("CLOCK");
   WiFi.begin(wifiSsid, wifiPassword);
   
   unsigned long startTime = millis();
@@ -92,7 +92,7 @@ void setup() {
 
     Serial.println("Blinking IP...");
 
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(1000);
     blinkByte(WiFi.localIP()[3]);
 
@@ -109,7 +109,7 @@ void setup() {
     IPAddress ip = WiFi.softAPIP();
     Serial.print("SoftAP IP address: ");
     Serial.println(ip);
-    pause = millis();
+    pauseTime = millis();
   }
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -146,7 +146,7 @@ void setup() {
     if (request->hasParam("pause")) {
       Serial.println("got pause");
       if (atoi(request->getParam("pause")->value().c_str()) != 0) {
-        pause = millis();
+        pauseTime = millis();
       }
     }
 
@@ -155,7 +155,7 @@ void setup() {
     reply += " password:      hidden\n";
     reply += " dialsaddress:  " + String(readDialsAddress()) + "\n";
     reply += " dials:         " + String(readDials()) + "\n";
-    reply += " pause:         " + String(pause) + "\n";
+    reply += " pause:         " + String(pauseTime) + "\n";
     reply += "\n";
     reply += "NTP time (minutes): " + String(realClock()) + "\n";
     reply += "NTP time (format):  " + String(ntp.formattedTime("%F %T")) + "\n";
@@ -169,15 +169,14 @@ void setup() {
 }
 
 void loop() {
-
-  if (pause != 0) {
+  if (pauseTime != 0) {
     // soft AP mode or in pause mode, do not do anything
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
     digitalWrite(LED_BUILTIN, HIGH);
     delay(100);
 
-    if ((millis() - pause) / 60000 > 5) {
+    if ((millis() - pauseTime) / 60000 > 5) {
       // but have a reboot after 5 minutes so that we do not end up in this state
       ESP.restart();
     }
@@ -231,7 +230,10 @@ void loop() {
     ESP.restart();
   }
 
-  delay(1000);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(10);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(990);
 }
 
 
@@ -243,23 +245,20 @@ int realClock() {
 // Motor handling
 
 void tick(bool positive) {
-  pulse(positive);
-  delay(1000);
-}
-
-void pulse(bool fwd) {
-  digitalWrite(IN_1, fwd ? HIGH : LOW);
-	digitalWrite(IN_2, fwd ? LOW : HIGH);
+  digitalWrite(IN_1, positive ? HIGH : LOW);
+  digitalWrite(IN_2, positive ? LOW : HIGH);
+  delay(30);
   analogWrite(ENABLE_A, 255);
-	delay(1000);
+  delay(1000);
 
   turnOff();
+  delay(1000);
 }
 
 void turnOff() {
   analogWrite(ENABLE_A, 0);
   digitalWrite(IN_1, LOW);
-	digitalWrite(IN_2, LOW);
+  digitalWrite(IN_2, LOW);
 }
 
 //==============================================================
@@ -354,9 +353,9 @@ void blinkByte(byte value)
   part = value / 100 % 10;
   //Serial.print(part); Serial.print(" : ");
   for (i = 0; i < part; i++) {
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
     digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
   delay (1000);
@@ -364,9 +363,9 @@ void blinkByte(byte value)
   part = value / 10 % 10;
   //Serial.print(part); Serial.print(" : ");
   for (i = 0; i < part; i++) {
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
     digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
   delay(1000);
@@ -374,9 +373,9 @@ void blinkByte(byte value)
   part = value % 10;
   //Serial.println(part);
   for (i = 0; i < part; i++) {
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
     digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
 }
