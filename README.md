@@ -36,10 +36,10 @@ Settings (one or all can be set):
 1. (Updates and) Reads the NTP time
 2. Reads the dial clock time from memory
 3. Compares dials and ntp:
-   3.1 If dials and ntp is the same we do nothing
-   3.2 Dials are "before" the NTP time we wait
-       (where "before" means < 70 minutes before - this is to handle DST)
-   3.2 Dials are "after" we make it tick and save the new dial position
+    1. If dials and ntp is the same we do nothing
+    2. Dials are "before" the NTP time we wait
+      (where "before" means < 70 minutes before - this is to handle DST)
+    2. Dials are "after" we make it tick and save the new dial position
 
 If wifi is dropped we restart to try and connect again (see startup).
 
