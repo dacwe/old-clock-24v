@@ -1,5 +1,12 @@
 # OLD CLOCK 24v
 
+## Overview
+
+![Diagram](docs/diagram.png)
+
+![Real clock](docs/clock.jpg)
+
+
 ## Startup
 
 1. Reads SSID and password from EEPROM and tries to connect.
